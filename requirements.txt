@@ -1,0 +1,3 @@
+chevron==0.13.1
+music21==6.3.0
+python-dotenv==0.15.0
