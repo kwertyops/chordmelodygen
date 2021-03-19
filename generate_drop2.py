@@ -12,7 +12,8 @@ def generate_drop2(filepath,
                    maj_triad='major-seven',
                    min_triad='minor-seven',
                    notation='tablature',
-                   orientation='standard'):
+                   orientation='standard',
+                   interval_names='intervals_off'):
 
     filename = filepath.split('/')[-1]
     src = converter.parseFile(filepath)
@@ -124,14 +125,19 @@ def generate_drop2(filepath,
     #
     chord_positions = {}
     note_positions = {}
+    chord_note_positions = {}
     melody_string_nums = {}
+    chord_interval_names = {}
     current_pos = minimum_fret
     prev_chord = None
     melody_string = 0
     for o in offsets:
         if o in all_chords_drop2:
             c = all_chords_drop2[o]
-            melody_string, current_pos = positionForChord(c, minimum_fret, maximum_fret, prev_chord, -1 * (melody_string) + 5)
+            melody_string, current_pos, np = positionForChord(c, minimum_fret, maximum_fret, prev_chord, -1 * (melody_string) + 5)
+            chord_note_positions[o] = np
+            cs = all_chord_symbols[o]
+            chord_interval_names[o] = intervalNamesForChord(c, cs)
             chord_positions[o] = current_pos
             melody_string_nums[o] = melody_string + 1
             prev_chord = c
@@ -224,15 +230,30 @@ def generate_drop2(filepath,
     # Append string numbers to chord notes in drop 2's
     i = 0
     cc = copy.deepcopy(chord_content)
+    fretboard_templates = copy.deepcopy(chord_content)
     for j, l in enumerate(cc):
         if '<' not in l or '>' not in l:
             continue
-        notes = l.split('  ')
-        notes[3] = notes[3] + '\\' + str(melody_string_nums[list(melody_string_nums.keys())[i]])
-        notes[2] = notes[2] + '\\' + str(melody_string_nums[list(melody_string_nums.keys())[i]] + 3)
-        notes[1] = notes[1] + '\\' + str(melody_string_nums[list(melody_string_nums.keys())[i]] + 1)
-        notes[0] = notes[0] + '\\' + str(melody_string_nums[list(melody_string_nums.keys())[i]] + 2)
-        chord_content[j] = '  '.join(notes)
+        # notes = l.split('  ')
+        # notes[3] = notes[3] + '\\' + str(mel_string_num)
+        # notes[2] = notes[2] + '\\' + str(mel_string_num + 3)
+        # notes[1] = notes[1] + '\\' + str(mel_string_num + 1)
+        # notes[0] = notes[0] + '\\' + str(mel_string_num + 2)
+        # chord_content[j] = '  '.join(notes)
+        mel_string_num = melody_string_nums[list(melody_string_nums.keys())[i]]
+        note_pos = chord_note_positions[list(chord_note_positions.keys())[i]]
+        interval_name = chord_interval_names[list(chord_interval_names.keys())[i]]
+        fretboard_templates[j] = f'#(define fret-table-{i} (make-fretboard-table))\n\n' + \
+                                 f'\\storePredefinedDiagram #fret-table-{i}\n' + \
+                                 fretboard_templates[j] + '\n'
+        fretboard_templates[j] += '#guitar-tuning\n'
+        fretboard_templates[j] += '#\'('
+        fretboard_templates[j] += f'(place-fret {mel_string_num + 0} {int(note_pos[0])} "{interval_name[3]}")'
+        fretboard_templates[j] += f'(place-fret {mel_string_num + 1} {int(note_pos[1])} "{interval_name[2]}")'
+        fretboard_templates[j] += f'(place-fret {mel_string_num + 2} {int(note_pos[2])} "{interval_name[1]}")'
+        fretboard_templates[j] += f'(place-fret {mel_string_num + 3} {int(note_pos[3])} "{interval_name[0]}"))'
+        fretboard_templates[j] += f'\n'
+        chord_content[j] = f'\\set predefinedDiagramTable = #fret-table-{i}\n          ' + chord_content[j]
         i += 1
 
     # convert melody to tab with positions
@@ -259,7 +280,9 @@ def generate_drop2(filepath,
     # final template values
     vals = {}
     vals['header'] =             '\n    '.join(header)
+    vals['fretboard_templates'] = '\n'.join([f for f in fretboard_templates if '<' in f])
     vals['chord_symbols'] =      '\n              '.join(root_chord_content)
+    vals['interval_names'] =     True if interval_names == 'intervals_on' else False
     vals['orientation'] =        '\\override FretBoard.fret-diagram-details.orientation = #\'landscape' if orientation == 'landscape' else ''
     vals['fretboard_diagrams'] = '\n          '.join(chord_content)
     vals['staff_type'] =         'TabStaff' if notation == 'tablature' else 'Staff'
