@@ -16,192 +16,15 @@ stringNotes = [
     64.0
 ]
 
-def intervalNamesForChord(c, cs):
-    pitches = [x.ps for x in c.pitches]
-    pitches = list(sorted(pitches))
-    root_ps = cs.notes[0].pitch.ps
-    interval_names = []
+def positionForChord(c, minFret, maxFret, prev_chord, prev_string, drop_type):
+    string_offsets = []
+    if drop_type == 'drop2':
+        string_offsets = [0, 1, 2, 3]
+    elif drop_type == 'drop3':
+        string_offsets = [0, 1, 2, 4]
+    elif drop_type == 'drop24':
+        string_offsets = [0, 1, 3, 4]
 
-    for p in pitches:
-        interval_semitones = (p - root_ps) % 12
-        if 'minor' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["b3"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["b5"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["6"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-        elif 'augmented' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["#9"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["b5"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["13"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-        elif 'half-diminished' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["b3"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["b5"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["6"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-        elif 'diminished' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["b3"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["b5"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["6"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-        elif 'dominant' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["#9"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["b5"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["13"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-        elif 'major' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["b3"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["#11"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["6"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-        elif 'suspended' in cs.chordKind:
-            if interval_semitones == 0:
-                interval_names += ["1"]
-            elif interval_semitones == 1:
-                interval_names += ["b9"]
-            elif interval_semitones == 2:
-                interval_names += ["9"]
-            elif interval_semitones == 3:
-                interval_names += ["b3"]
-            elif interval_semitones == 4:
-                interval_names += ["3"]
-            elif interval_semitones == 5:
-                interval_names += ["4"]
-            elif interval_semitones == 6:
-                interval_names += ["b5"]
-            elif interval_semitones == 7:
-                interval_names += ["5"]
-            elif interval_semitones == 8:
-                interval_names += ["#5"]
-            elif interval_semitones == 9:
-                interval_names += ["13"]
-            elif interval_semitones == 10:
-                interval_names += ["b7"]
-            elif interval_semitones == 11:
-                interval_names += ["7"]
-    return interval_names
-
-def positionForChord(c, minFret, maxFret, prev_chord, prev_string):
     pitches = [x.ps for x in c.pitches]
     pitches = list(sorted(pitches))
     melString = 5
@@ -214,11 +37,11 @@ def positionForChord(c, minFret, maxFret, prev_chord, prev_string):
             melString = prev_string
             try:
                 # print(f'matching pitches: {pitches}')
-                while pitches[3] < stringNotes[melString] + minFret:
+                while pitches[3] < stringNotes[melString-string_offsets[0]] + minFret:
                     melString -= 1
-                while (pitches[2] < stringNotes[melString-1] + minFret or
-                        pitches[1] < stringNotes[melString-2] + minFret or
-                        pitches[0] < stringNotes[melString-3] + minFret ):
+                while (pitches[2] < stringNotes[melString-string_offsets[1]] + minFret or
+                        pitches[1] < stringNotes[melString-string_offsets[2]] + minFret or
+                        pitches[0] < stringNotes[melString-string_offsets[3]] + minFret ):
                     melString -= 1
             except IndexError:
                 melString = 5
@@ -226,11 +49,11 @@ def positionForChord(c, minFret, maxFret, prev_chord, prev_string):
     # normal case, start from the highest string
     try:
         # print(f'matching pitches: {pitches}')
-        while pitches[3] < stringNotes[melString] + minFret:
+        while pitches[3] < stringNotes[melString-string_offsets[0]] + minFret:
             melString -= 1
-        while (pitches[2] < stringNotes[melString-1] + minFret or
-                pitches[1] < stringNotes[melString-2] + minFret or
-                pitches[0] < stringNotes[melString-3] + minFret ):
+        while (pitches[2] < stringNotes[melString-string_offsets[1]] + minFret or
+                pitches[1] < stringNotes[melString-string_offsets[2]] + minFret or
+                pitches[0] < stringNotes[melString-string_offsets[3]] + minFret ):
             melString -= 1
     except IndexError:
         try:
@@ -238,29 +61,23 @@ def positionForChord(c, minFret, maxFret, prev_chord, prev_string):
             # print(f'pitches: {pitches}')
             minFret = 0
             melString = 5
-            while pitches[3] < stringNotes[melString] + minFret:
+            while pitches[3] < stringNotes[melString-string_offsets[0]] + minFret:
                 melString -= 1
-            while (pitches[2] < stringNotes[melString-1] + minFret or
-                    pitches[1] < stringNotes[melString-2] + minFret or
-                    pitches[0] < stringNotes[melString-3] + minFret ):
+            while (pitches[2] < stringNotes[melString-string_offsets[1]] + minFret or
+                    pitches[1] < stringNotes[melString-string_offsets[2]] + minFret or
+                    pitches[0] < stringNotes[melString-string_offsets[3]] + minFret ):
                 melString -= 1
         except IndexError:
             raise NoteTooLowForChord
 
-    position = min(
-        pitches[3] - stringNotes[melString],
-        pitches[2] - stringNotes[melString-1],
-        pitches[1] - stringNotes[melString-2],
-        pitches[0] - stringNotes[melString-3] )
-
     note_positions = [
-        pitches[3] - stringNotes[melString],
-        pitches[2] - stringNotes[melString-1],
-        pitches[1] - stringNotes[melString-2],
-        pitches[0] - stringNotes[melString-3] ]
+        pitches[3] - stringNotes[melString-string_offsets[0]],
+        pitches[2] - stringNotes[melString-string_offsets[1]],
+        pitches[1] - stringNotes[melString-string_offsets[2]],
+        pitches[0] - stringNotes[melString-string_offsets[3]] ]
 
     # return melody_string_num, fret_position, note_positions
-    return 5 - melString, int(position), note_positions
+    return 5 - melString, note_positions
 
 def increaseChordOctave(c, minFret):
     c = copy.deepcopy(c)
@@ -294,9 +111,15 @@ def matchInversionToMelody(c, mel):
     # print(f"after inversion: {c}")
     return c
 
-def drop2(c):
+def drop_chord(c, type='drop2'):
     c = copy.deepcopy(c)
-    c[2].octave -= 1
+    if type == 'drop2':
+        c[2].octave -= 1
+    elif type == 'drop3':
+        c[1].octave -= 1
+    elif type == 'drop24':
+        c[0].octave -= 1
+        c[2].octave -= 1
     return c
 
 def addMelodyToChord(c, mel):
@@ -518,6 +341,191 @@ def reduceToFourNoteChord(c, csymb, mel):
                 c.remove(c[3])
         c.add(mel)
     return c
+
+def intervalNamesForChord(c, cs):
+    pitches = [x.ps for x in c.pitches]
+    pitches = list(sorted(pitches))
+    root_ps = cs.notes[0].pitch.ps
+    interval_names = []
+
+    for p in pitches:
+        interval_semitones = (p - root_ps) % 12
+        if 'minor' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["b3"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["b5"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["6"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+        elif 'augmented' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["#9"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["b5"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["13"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+        elif 'half-diminished' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["b3"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["b5"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["6"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+        elif 'diminished' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["b3"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["b5"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["6"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+        elif 'dominant' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["#9"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["b5"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["13"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+        elif 'major' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["b3"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["#11"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["6"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+        elif 'suspended' in cs.chordKind:
+            if interval_semitones == 0:
+                interval_names += ["1"]
+            elif interval_semitones == 1:
+                interval_names += ["b9"]
+            elif interval_semitones == 2:
+                interval_names += ["9"]
+            elif interval_semitones == 3:
+                interval_names += ["b3"]
+            elif interval_semitones == 4:
+                interval_names += ["3"]
+            elif interval_semitones == 5:
+                interval_names += ["4"]
+            elif interval_semitones == 6:
+                interval_names += ["b5"]
+            elif interval_semitones == 7:
+                interval_names += ["5"]
+            elif interval_semitones == 8:
+                interval_names += ["#5"]
+            elif interval_semitones == 9:
+                interval_names += ["13"]
+            elif interval_semitones == 10:
+                interval_names += ["b7"]
+            elif interval_semitones == 11:
+                interval_names += ["7"]
+    return interval_names
 
 def addExtensions(c, csymb, ext, mel):
     c = copy.deepcopy(c)
