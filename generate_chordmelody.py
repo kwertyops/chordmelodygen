@@ -134,16 +134,21 @@ def generate_arrangement(filepath,
     melody_string = 0
     for o in offsets:
         if o in all_chords_drop:
-            c = all_chords_drop[o]
-            melody_string, np = positionForChord(c, minimum_fret, maximum_fret, prev_chord, -1 * (melody_string) + 5, drop_type)
-            current_pos = int(min(np))
-            chord_note_frets[o] = np
-
-            cs = all_chord_symbols[o]
-            chord_interval_names[o] = intervalNamesForChord(c, cs)
-            chord_neck_positions[o] = current_pos
-            melody_string_nums[o] = melody_string + 1
-            prev_chord = c
+            try:
+                c = all_chords_drop[o]
+                melody_string, np = positionForChord(c, minimum_fret, maximum_fret, prev_chord, -1 * (melody_string) + 5, drop_type)
+                current_pos = int(min(np))
+                chord_note_frets[o] = np
+                cs = all_chord_symbols[o]
+                chord_interval_names[o] = intervalNamesForChord(c, cs)
+                chord_neck_positions[o] = current_pos
+                melody_string_nums[o] = melody_string + 1
+                prev_chord = c
+            except NoteTooLowForChord:
+                r = note.Rest()
+                r.duration = all_chords_drop[o].duration
+                all_chords_drop[o] = r
+                prev_chord = None
         if o in all_notes:
             melody_neck_positions[o] = current_pos
 

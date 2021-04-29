@@ -7,7 +7,7 @@ class AnacrusisException(Exception):
 class NoteTooLowForChord(Exception):
     pass
 
-stringNotes = [
+string_notes = [
     40.0,
     45.0,
     50.0,
@@ -16,7 +16,19 @@ stringNotes = [
     64.0
 ]
 
-def positionForChord(c, minFret, maxFret, prev_chord, prev_string, drop_type):
+def voicingOutOfFretRange(pitches, mel_string, string_offsets, min_fret):
+    return (
+        pitches[3] < string_notes[mel_string-string_offsets[0]] + min_fret or
+        pitches[2] < string_notes[mel_string-string_offsets[1]] + min_fret or
+        pitches[1] < string_notes[mel_string-string_offsets[2]] + min_fret or
+        pitches[0] < string_notes[mel_string-string_offsets[3]] + min_fret
+    )
+
+def checkValidStringSet(mel_string, string_offsets):
+    if mel_string-string_offsets[3] < 0:
+        raise IndexError
+
+def positionForChord(c, min_fret, max_fret, prev_chord, prev_string, drop_type):
     string_offsets = []
     if drop_type == 'drop2':
         string_offsets = [0, 1, 2, 3]
@@ -27,61 +39,48 @@ def positionForChord(c, minFret, maxFret, prev_chord, prev_string, drop_type):
 
     pitches = [x.ps for x in c.pitches]
     pitches = list(sorted(pitches))
-    melString = 5
+    mel_string = 5
 
     # if the highest voice stayed the same between chords
     # try to play it on the same string
     if prev_chord is not None:
         prev_mel = list(sorted([x.ps for x in prev_chord.pitches]))[3]
         if pitches[3] == prev_mel:
-            melString = prev_string
+            mel_string = prev_string
             try:
-                # print(f'matching pitches: {pitches}')
-                while pitches[3] < stringNotes[melString-string_offsets[0]] + minFret:
-                    melString -= 1
-                while (pitches[2] < stringNotes[melString-string_offsets[1]] + minFret or
-                        pitches[1] < stringNotes[melString-string_offsets[2]] + minFret or
-                        pitches[0] < stringNotes[melString-string_offsets[3]] + minFret ):
-                    melString -= 1
+                while (voicingOutOfFretRange(pitches, mel_string, string_offsets, min_fret)):
+                    mel_string -= 1
+                    checkValidStringSet(mel_string, string_offsets)
             except IndexError:
-                melString = 5
+                mel_string = 5
 
     # normal case, start from the highest string
     try:
-        # print(f'matching pitches: {pitches}')
-        while pitches[3] < stringNotes[melString-string_offsets[0]] + minFret:
-            melString -= 1
-        while (pitches[2] < stringNotes[melString-string_offsets[1]] + minFret or
-                pitches[1] < stringNotes[melString-string_offsets[2]] + minFret or
-                pitches[0] < stringNotes[melString-string_offsets[3]] + minFret ):
-            melString -= 1
+        while (voicingOutOfFretRange(pitches, mel_string, string_offsets, min_fret)):
+            mel_string -= 1
+            checkValidStringSet(mel_string, string_offsets)
     except IndexError:
         try:
-            # print(f'stringNotes: {stringNotes}')
-            # print(f'pitches: {pitches}')
-            minFret = 0
-            melString = 5
-            while pitches[3] < stringNotes[melString-string_offsets[0]] + minFret:
-                melString -= 1
-            while (pitches[2] < stringNotes[melString-string_offsets[1]] + minFret or
-                    pitches[1] < stringNotes[melString-string_offsets[2]] + minFret or
-                    pitches[0] < stringNotes[melString-string_offsets[3]] + minFret ):
-                melString -= 1
+            min_fret = 0
+            mel_string = 5
+            while (voicingOutOfFretRange(pitches, mel_string, string_offsets, min_fret)):
+                mel_string -= 1
+                checkValidStringSet(mel_string, string_offsets)
         except IndexError:
             raise NoteTooLowForChord
 
     note_positions = [
-        pitches[3] - stringNotes[melString-string_offsets[0]],
-        pitches[2] - stringNotes[melString-string_offsets[1]],
-        pitches[1] - stringNotes[melString-string_offsets[2]],
-        pitches[0] - stringNotes[melString-string_offsets[3]] ]
+        pitches[3] - string_notes[mel_string-string_offsets[0]],
+        pitches[2] - string_notes[mel_string-string_offsets[1]],
+        pitches[1] - string_notes[mel_string-string_offsets[2]],
+        pitches[0] - string_notes[mel_string-string_offsets[3]] ]
 
     # return melody_string_num, fret_position, note_positions
-    return 5 - melString, note_positions
+    return 5 - mel_string, note_positions
 
-def increaseChordOctave(c, minFret):
+def increaseChordOctave(c, min_fret):
     c = copy.deepcopy(c)
-    octaves = 1 + ((stringNotes[-1] + minFret) - c.pitches[-1].ps) // 12
+    octaves = 1 + ((string_notes[-1] + min_fret) - c.pitches[-1].ps) // 12
     for n in c.notes:
         new = copy.deepcopy(n)
         new.octave += octaves
