@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import chevron
 import os
 import sys
+import re
 
 def generate_arrangement(filepath,
                    minimum_fret=5,
@@ -162,14 +163,18 @@ def generate_arrangement(filepath,
     for i, m in enumerate(measures):
         measure_melody = stream.Measure()
         measure_melody.number = m.number
+
         if i == 0:
             measure_melody.insert(0.0, m.keySignature)
             measure_melody.insert(0.0, m.timeSignature)
             measure_melody.insert(0.0, m.clef)
+
         for n in m:
             if 'SystemLayout' in n.classes:
                 sl = layout.SystemLayout(isNew=True)
                 measure_melody.append(sl)
+            if 'TimeSignature' in n.classes and i != 0:
+                measure_melody.append(n)
 
         measure_chords_root = copy.deepcopy(measure_melody)
         measure_chords_drop = copy.deepcopy(measure_melody)
@@ -226,14 +231,22 @@ def generate_arrangement(filepath,
     # Get the lilypond text for the drop chord content
     lpc.context = lily.lilyObjects.LyMusicList()
     lpc.appendObjectsToContextFromStream(lilychords)
-    chord_content = str(lpc.context).split('\n')
-    chord_content = [s for s in chord_content if not s.startswith('\\')]
+    drop_chord_content = str(lpc.context).split('\n')
+    drop_chord_content = [s for s in drop_chord_content if not s.startswith('\\')]
 
     # Get the lilypond text for the root chord content
     lpc.context = lily.lilyObjects.LyMusicList()
     lpc.appendObjectsToContextFromStream(lilychordsroot)
     root_chord_content = str(lpc.context).split('\n')
     root_chord_content = [s.replace('r','s') for s in root_chord_content if not s.startswith('\\')]
+
+    # Replace tied chord endings with rests (for weird time signatures)
+    for i in range(1,len(root_chord_content)):
+        if '~' in root_chord_content[i-1]:
+            root_chord_content[i] = re.sub('<.*>', 's', root_chord_content[i])
+    for i in range(1,len(drop_chord_content)):
+        if '~' in drop_chord_content[i-1]:
+            drop_chord_content[i] = re.sub('<.*>', 'r', drop_chord_content[i])
 
     # Build the fretboard diagrams for the drop voicings
     string_offsets = []
@@ -245,10 +258,14 @@ def generate_arrangement(filepath,
         string_offsets = [0, 1, 3, 4]
 
     i = 0
-    cc = copy.deepcopy(chord_content)
-    fretboard_templates = copy.deepcopy(chord_content)
-    
+    cc = copy.deepcopy(drop_chord_content)
+    fretboard_templates = copy.deepcopy(drop_chord_content)
+
     for j, l in enumerate(cc):
+        if '~' in cc[j-1]:
+            fretboard_templates[j] = ''
+            drop_chord_content[j] = f'\\set predefinedDiagramTable = #fret-table-{i}\n          ' + drop_chord_content[j]
+            continue
         if '<' not in l or '>' not in l:
             continue
         mel_string_num = melody_string_nums[list(melody_string_nums.keys())[i]]
@@ -264,7 +281,7 @@ def generate_arrangement(filepath,
         fretboard_templates[j] += f'(place-fret {mel_string_num + string_offsets[2]} {int(note_pos[2])} "{interval_name[1]}")'
         fretboard_templates[j] += f'(place-fret {mel_string_num + string_offsets[3]} {int(note_pos[3])} "{interval_name[0]}"))'
         fretboard_templates[j] += f'\n'
-        chord_content[j] = f'\\set predefinedDiagramTable = #fret-table-{i}\n          ' + chord_content[j]
+        drop_chord_content[j] = f'\\set predefinedDiagramTable = #fret-table-{i}\n          ' + drop_chord_content[j]
         i += 1
 
     # convert melody to tab with positions
@@ -295,7 +312,7 @@ def generate_arrangement(filepath,
     vals['chord_symbols'] =      '\n              '.join(root_chord_content)
     vals['interval_names'] =     True if interval_names == 'intervals_on' else False
     vals['orientation'] =        '\\override FretBoard.fret-diagram-details.orientation = #\'landscape' if orientation == 'landscape' else ''
-    vals['fretboard_diagrams'] = '\n          '.join(chord_content)
+    vals['fretboard_diagrams'] = '\n          '.join(drop_chord_content)
     vals['staff_type'] =         'TabStaff' if notation == 'tablature' else 'Staff'
     vals['staff_headers'] =      '\\set TabStaff.restrainOpenStrings = ##t' if notation == 'tablature' else ''
     vals['melody'] =             '\n          '.join(melody_content)

@@ -557,8 +557,9 @@ def realizeChordDurations(v):
     v = copy.deepcopy(v)
     for m in v:
         chords = m.getElementsByClass('Chord')
+        rests = m.getElementsByClass('Rest')
         i = 0
-        if len(chords) == 0:
+        if len(chords) == 0 and len(rests) == 0:
             r = note.Rest()
             r.duration = m.barDuration
             m.insert(0.0, r)
