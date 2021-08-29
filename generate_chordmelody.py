@@ -238,7 +238,7 @@ def generate_arrangement(filepath,
     lpc.context = lily.lilyObjects.LyMusicList()
     lpc.appendObjectsToContextFromStream(lilychordsroot)
     root_chord_content = str(lpc.context).split('\n')
-    root_chord_content = [s.replace('r','s') for s in root_chord_content if not s.startswith('\\')]
+    root_chord_content = [s.replace('r ','s ') for s in root_chord_content if not s.startswith('\\')]
 
     # Replace tied chord endings with rests (for weird time signatures)
     for i in range(1,len(root_chord_content)):
