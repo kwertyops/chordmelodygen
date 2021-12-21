@@ -89,12 +89,16 @@ def generate_arrangement(filepath,
         cs = all_chord_symbols[o]
         mel = melody_for_chord[o]
 
-        if '/' in cs.figure:
+        if '/' in cs.figure or 'pedal' in cs.figure:
             noslash = harmony.ChordSymbol(cs.figure.split('/')[0])
             for n in cs.notes:
                 cs.remove(n)
             for n in noslash.notes:
                 cs.add(n)
+
+        # Hack for some slash chords
+        if 'Cannot Be Identified' in cs.figure:
+            cs.remove(cs[0])
 
         extensions = []
 

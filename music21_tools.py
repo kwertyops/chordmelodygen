@@ -191,7 +191,10 @@ def expandToFourNoteChord(c, kind, maj_triad='major-seven', min_triad='minor-sev
         fifth = copy.deepcopy(r)
         fifth.ps += 7
         seventh = copy.deepcopy(r)
-        seventh.ps += 11
+        if maj_triad == 'major-seven' or maj_triad == 'major-nine':
+            seventh.ps += 11
+        elif maj_triad == 'major-six' or maj_triad == 'major-six-nine':
+            seventh.ps += 9
         c.add(third)
         c.add(fifth)
         c.add(seventh)
@@ -300,7 +303,7 @@ def reduceToFourNoteChord(c, csymb, mel):
                 c[0].transpose(2, inPlace=True)
             elif mel_semitones == 11: # 7
                 c.remove(c[3])
-        elif 'major' in csymb.chordKind:
+        elif 'major' in csymb.chordKind or 'pedal' in csymb.figure:
             if mel_semitones == 0: # root
                 c.remove(c[0])
             elif mel_semitones == 1: # b9
@@ -474,7 +477,7 @@ def intervalNamesForChord(c, cs):
                 interval_names += ["b7"]
             elif interval_semitones == 11:
                 interval_names += ["7"]
-        elif 'major' in cs.chordKind:
+        elif 'major' in cs.chordKind or 'pedal' in cs.figure:
             if interval_semitones == 0:
                 interval_names += ["1"]
             elif interval_semitones == 1:
