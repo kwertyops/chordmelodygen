@@ -55,30 +55,27 @@ def generate_arrangement(filepath,
     #
     melody_for_chord = {}
     chord_for_note = {}
+    prev_chord = None
+    prev_note = None
 
     for o in offsets:
         # note and chord change together
         if o in all_notes and o in all_chord_symbols:
             chord_for_note[o] = all_chord_symbols[o]
+            prev_chord = all_chord_symbols[o]
             if all_notes[o].isRest:
-                try:
-                    melody_for_chord[o] = melody_for_chord[list(melody_for_chord.keys())[-1]]
-                except:
-                    melody_for_chord[o] = None
+                    melody_for_chord[o] = prev_note
             else:
                 melody_for_chord[o] = all_notes[o]
+                prev_note = all_notes[o]
         # note change without chord (use previous chord)
         elif o in all_notes:
-            try:
-                chord_for_note[o] = chord_for_note[list(chord_for_note.keys())[-1]]
-            except:
-                chord_for_note[o] = None
+            chord_for_note[o] = prev_chord
+            prev_note = all_notes[o]
         # chord change without note (use previous note)
         elif o in all_chord_symbols:
-            try:
-                melody_for_chord[o] = melody_for_chord[list(melody_for_chord.keys())[-1]]
-            except:
-                melody_for_chord[o] = None
+            melody_for_chord[o] = prev_note
+            prev_chord = all_chord_symbols[o]
 
 
     ######
@@ -89,7 +86,7 @@ def generate_arrangement(filepath,
         cs = all_chord_symbols[o]
         mel = melody_for_chord[o]
 
-        if '/' in cs.figure or 'pedal' in cs.figure:
+        if '/' in cs.figure:
             noslash = harmony.ChordSymbol(cs.figure.split('/')[0])
             for n in cs.notes:
                 cs.remove(n)
@@ -297,6 +294,7 @@ def generate_arrangement(filepath,
                     '}' not in l and
                     l.strip() != ''):
                 p = melody_neck_positions[list(melody_neck_positions.keys())[mel_i]]
+                p = max(p-1, 0)
                 melody_content.insert(i + mel_i, f'\\set TabStaff.minimumFret = #{p}')
                 mel_i += 1
 
