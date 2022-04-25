@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from music21_tools import *
+from src.music21_tools import *
 from dotenv import load_dotenv
 import chevron
 import os
-import sys
 import re
 
 def generate_arrangement(filepath,
@@ -107,18 +106,18 @@ def generate_arrangement(filepath,
             new_c = chord.Chord(cs.notes[0:min(len(cs.notes),4)])
             extensions += cs.notes[4:] if len(cs.notes) > 4 else []
 
-        fnc = expandToFourNoteChord(new_c, cs.chordKind, maj_triad=maj_triad, min_triad=min_triad)
-        mc = addMelodyToChord(fnc, mel)
-        red = reduceToFourNoteChord(mc, cs, mel)
+        fnc = expand_to_four_note_chord(new_c, cs.chordKind, maj_triad=maj_triad, min_triad=min_triad)
+        mc = add_melody_to_chord(fnc, mel)
+        red = reduce_to_four_note_chord(mc, cs, mel)
 
         if mel is not None:
-            inversion = matchInversionToMelody(red, mel)
+            inversion = match_inversion_to_melody(red, mel)
         else:
-            inversion = increaseChordOctave(red, minimum_fret)
+            inversion = increase_chord_octave(red, minimum_fret)
 
         dc = drop_chord(inversion, drop_type)
         
-        final = addExtensions(dc, cs, extensions, mel)
+        final = add_extensions(dc, cs, extensions, mel)
 
         all_chords_drop[o] = final
 
@@ -138,11 +137,11 @@ def generate_arrangement(filepath,
         if o in all_chords_drop:
             try:
                 c = all_chords_drop[o]
-                melody_string, np = positionForChord(c, minimum_fret, maximum_fret, prev_chord, -1 * (melody_string) + 5, drop_type)
+                melody_string, np = position_for_chord(c, minimum_fret, maximum_fret, prev_chord, -1 * (melody_string) + 5, drop_type)
                 current_pos = int(min(np))
                 chord_note_frets[o] = np
                 cs = all_chord_symbols[o]
-                chord_interval_names[o] = intervalNamesForChord(c, cs)
+                chord_interval_names[o] = interval_names_for_chord(c, cs)
                 chord_neck_positions[o] = current_pos
                 melody_string_nums[o] = melody_string + 1
                 prev_chord = c
@@ -193,8 +192,8 @@ def generate_arrangement(filepath,
         voice_chords_root.insert(m.offset, measure_chords_root)
         voice_chords_drop.insert(m.offset, measure_chords_drop)
 
-    voice_chords_root = realizeChordDurations(voice_chords_root)
-    voice_chords_drop = realizeChordDurations(voice_chords_drop)
+    voice_chords_root = realize_chord_durations(voice_chords_root)
+    voice_chords_drop = realize_chord_durations(voice_chords_drop)
 
     ############
     ############
