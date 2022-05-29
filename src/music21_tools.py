@@ -272,7 +272,7 @@ def interval_names_for_chord(c, cs):
     interval_names = []
 
     for p in pitches:
-        interval_semitones = (p - root_ps) % 12
+        interval_semitones = int((p - root_ps) % 12)
         if 'minor' in cs.chordKind:
             interval_names.append(chordkind_interval_names['minor'][interval_semitones])
         elif 'augmented' in cs.chordKind:
