@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from src.music21_tools import *
+import sys
+from music21_tools import *
 from dotenv import load_dotenv
 import chevron
 import os
@@ -42,6 +43,8 @@ def generate_arrangement(filepath,
         chords = m.getElementsByClass('Chord')
         notes = m.getElementsByClass(['Note', 'Rest'])
         for c in chords:
+            if 'N.C.' in c.figure:
+                continue
             all_chord_symbols[m.offset + c.offset] = c
         for n in notes:
             all_notes[m.offset + n.offset] = n
@@ -185,8 +188,13 @@ def generate_arrangement(filepath,
                 n.lyrics = []
                 measure_melody.insert(n.offset, n)
             elif 'Chord' in n.classes:
-                measure_chords_root.insert(n.offset, all_chord_symbols[o])
-                measure_chords_drop.insert(n.offset, all_chords_drop[o])
+                if 'N.C' in n.figure:
+                    continue
+                try:
+                    measure_chords_root.insert(n.offset, all_chord_symbols[o])
+                    measure_chords_drop.insert(n.offset, all_chords_drop[o])
+                except exceptions21.StreamException:
+                    print("Possible duplicate chord skipped: {n}")
 
         voice_melody.insert(m.offset, measure_melody)
         voice_chords_root.insert(m.offset, measure_chords_root)
@@ -330,3 +338,6 @@ def generate_arrangement(filepath,
 
     # typeset the lilypond into PDF
     os.system(f'{os.environ.get("LILYPOND_PATH")} -o {lilyfile.replace(".ly", "")} {lilyfile}')
+
+if __name__ == "__main__":
+    generate_arrangement(sys.argv[1])

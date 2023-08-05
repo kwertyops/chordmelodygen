@@ -104,6 +104,9 @@ def position_for_chord(c, min_fret, max_fret, prev_chord, prev_string, drop_type
     return 5 - mel_string, note_positions
 
 def increase_chord_octave(c, min_fret):
+    """ Increase the octave of all notes in the chord
+    to fit the chord above the minimum fret.
+    """
     c = copy.deepcopy(c)
     octaves = 1 + ((string_notes[-1] + min_fret) - c.pitches[-1].ps) // 12
     for n in c.notes:
@@ -115,6 +118,9 @@ def increase_chord_octave(c, min_fret):
     return c
 
 def match_inversion_to_melody(c, mel):
+    """ Increase chord octave and invert the notes
+    to match the melody voice to the melody note.
+    """
     c = copy.deepcopy(c)
     for n in c.notes: # find pitch of the melody note in the chord
             if n.pitch.pitchClass == mel.pitch.pitchClass:
